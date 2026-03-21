@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <RootNamespace>SpireTracker</RootNamespace>
+        <AssemblyName>SpireTracker</AssemblyName>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <!-- OS Detection -->
+    <PropertyGroup>
+        <IsWindows>false</IsWindows>
+        <IsLinux>false</IsLinux>
+        <IsOSX>false</IsOSX>
+        <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
+        <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
+        <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
+    </PropertyGroup>
+
+    <!-- Windows paths -->
+    <PropertyGroup Condition="'$(IsWindows)' == 'true'">
+        <Sts2DataDir>C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64</Sts2DataDir>
+    </PropertyGroup>
+
+    <!-- Linux paths -->
+    <PropertyGroup Condition="'$(IsLinux)' == 'true'">
+        <Sts2DataDir>$(HOME)/.local/share/Steam/steamapps/common/Slay the Spire 2/data_sts2_linuxbsd_x86_64</Sts2DataDir>
+    </PropertyGroup>
+
+    <!-- macOS paths -->
+    <PropertyGroup Condition="'$(IsOSX)' == 'true'">
+        <Sts2DataDir>$(HOME)/Library/Application Support/Steam/steamapps/common/Slay the Spire 2/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64</Sts2DataDir>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Suppress architecture mismatch warnings (mod is MSIL, game DLLs are platform-specific) -->
+        <NoWarn>$(NoWarn);MSB3270</NoWarn>
+    </PropertyGroup>
+
+    <!-- Game DLL references -->
+    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
+        <Reference Include="0Harmony">
+            <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="sts2">
+            <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <!-- NuGet packages -->
+    <ItemGroup>
+        <PackageReference Include="GodotSharp" Version="4.4.0" />
+    </ItemGroup>
+
+    <!-- Copy manifest to output -->
+    <ItemGroup>
+        <None Include="mod_manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

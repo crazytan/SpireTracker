@@ -1,0 +1,11 @@
+{
+  "id": "SpireTracker",
+  "name": "SpireTracker",
+  "author": "Jia",
+  "description": "Marks relics you haven't picked yet with a NEW badge on reward and shop screens",
+  "version": "v0.1.0",
+  "has_pck": false,
+  "has_dll": true,
+  "dependencies": [],
+  "affects_gameplay": false
+}

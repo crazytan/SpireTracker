@@ -4,7 +4,7 @@ namespace SpireTracker.UI;
 
 /// <summary>
 /// Creates and manages "NEW" badge labels that are attached as children
-/// of relic UI nodes to indicate never-before-seen relics.
+/// of relic UI nodes to indicate relics the player hasn't picked up yet.
 /// </summary>
 public static class NewBadge
 {

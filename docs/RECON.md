@@ -1,4 +1,4 @@
-# SpireTracker — Decompilation Findings
+# Decompilation Findings
 
 Decompiled `sts2.dll` (v0.99.1, build 7ac1f450, 2026-03-13) using ilspycmd 9.1.0.
 

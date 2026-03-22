@@ -9,7 +9,7 @@ namespace SpireTracker.Patches;
 
 /// <summary>
 /// Patches the merchant/shop relic display to show "NEW" badges
-/// on relics that haven't been discovered yet.
+/// on relics that haven't been picked up yet.
 ///
 /// Target: NMerchantRelic.UpdateVisual() — called when the shop relic
 /// slot updates its visual representation.

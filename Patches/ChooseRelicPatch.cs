@@ -10,14 +10,14 @@ namespace SpireTracker.Patches;
 
 /// <summary>
 /// Patches the "Choose a Relic" selection screen (boss/treasure relic picks)
-/// to show "NEW" badges on relics that haven't been discovered yet.
+/// to show "NEW" badges on relics that haven't been picked up yet.
 ///
 /// Target: NChooseARelicSelection._Ready() — called when the selection
 /// screen is initialized and relic holders are populated.
 ///
 /// The screen has a _relicRow container with NTreasureRoomRelicHolder children,
 /// each displaying a RelicModel. We iterate them in Postfix and badge any
-/// whose relic hasn't been discovered.
+/// whose relic hasn't been picked up before.
 /// </summary>
 [HarmonyPatch(typeof(NChooseARelicSelection), "_Ready")]
 public class ChooseRelicPatch

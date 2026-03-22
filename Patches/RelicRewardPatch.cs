@@ -9,13 +9,13 @@ namespace SpireTracker.Patches;
 
 /// <summary>
 /// Patches the relic reward button to show a "NEW" badge when the relic
-/// has never been seen before.
+/// has never been picked up before.
 ///
 /// Target: NRewardButton.Reload() — called when a reward button is set up
 /// with its reward data and rendered on screen.
 ///
-/// We use a Prefix to check DiscoveredRelics BEFORE the game marks it as
-/// seen, then a Postfix to attach the badge after the UI is built.
+/// We use a Prefix to check DiscoveredRelics BEFORE the game updates the set,
+/// then a Postfix to attach the badge after the UI is built.
 /// </summary>
 [HarmonyPatch(typeof(NRewardButton), "Reload")]
 public class RelicRewardPatch
@@ -29,7 +29,7 @@ public class RelicRewardPatch
 
     /// <summary>
     /// Before Reload: check if this is a relic reward and if the relic is new.
-    /// Must happen before MarkContentAsSeen() is called.
+    /// Must happen before the game updates DiscoveredRelics.
     /// </summary>
     static void Prefix(NRewardButton __instance)
     {

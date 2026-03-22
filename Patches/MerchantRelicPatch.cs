@@ -1,6 +1,5 @@
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Entities.Merchant;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Screens.Shops;
 using SpireTracker.UI;
@@ -14,9 +13,8 @@ namespace SpireTracker.Patches;
 /// Target: NMerchantRelic.UpdateVisual() — called when the shop relic
 /// slot updates its visual representation.
 ///
-/// NMerchantRelic extends NMerchantSlot, which has an Entry property
-/// of type MerchantEntry. For relics, this is MerchantRelicEntry,
-/// which has a .Model property of type RelicModel.
+/// NMerchantRelic has a private _relic field (RelicModel) set in FillSlot()
+/// before UpdateVisual() is called. We read it directly via Traverse.
 /// </summary>
 [HarmonyPatch(typeof(NMerchantRelic), "UpdateVisual")]
 public class MerchantRelicPatch
@@ -25,26 +23,13 @@ public class MerchantRelicPatch
     {
         try
         {
-            // NMerchantSlot has an Entry property; for relics it's MerchantRelicEntry
-            var entry = Traverse.Create(__instance).Property("Entry").GetValue<MerchantEntry>();
-            if (entry is not MerchantRelicEntry relicEntry) return;
-
-            var relicModel = relicEntry.Model;
+            var relicModel = Traverse.Create(__instance).Field("_relic").GetValue<RelicModel>();
             if (relicModel == null) return;
 
-            if (RelicTracker.IsNewRelic(relicModel.Id))
+            if (RelicTracker.IsNewRelic(relicModel))
             {
-                // Attach badge to the relic holder visual
                 var relicHolder = Traverse.Create(__instance).Field("_relicHolder").GetValue<Control>();
-                if (relicHolder != null)
-                {
-                    NewBadge.AttachTo(relicHolder);
-                }
-                else
-                {
-                    // Fallback: attach to the instance itself
-                    NewBadge.AttachTo(__instance);
-                }
+                NewBadge.AttachTo(relicHolder ?? (Control)__instance);
             }
         }
         catch (Exception ex)

@@ -33,6 +33,7 @@ public class SpireTracker
         {
             typeof(Patches.RelicRewardPatch),
             typeof(Patches.ChooseRelicPatch),
+            typeof(Patches.TreasureRoomRelicPatch),
             typeof(Patches.MerchantRelicPatch),
         };
 

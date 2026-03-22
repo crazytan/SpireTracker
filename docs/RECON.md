@@ -19,11 +19,11 @@ Decompiled `sts2.dll` (v0.99.1, build 7ac1f450, 2026-03-13) using ilspycmd 9.1.0
   - `ProgressState Progress` — Actual progress data
   - `void MarkRelicAsSeen(RelicModel relic)` — Called by SaveManager, delegates to ProgressState
 
-### Important: "Discovered" vs "Picked"
+### Important: "Discovered" = Picked Up
 
-- **Discovered** = player has seen the relic (appeared on screen). Stored in `ProgressState.DiscoveredRelics`.
-- **Picked/Obtained** = player actually selected the relic. Tracked per-run via `ModelChoiceHistoryEntry.wasPicked` in run history files, NOT aggregated in progress state.
-- For SpireTracker v0.1, we use `DiscoveredRelics` — if a relic is NOT in this set, the player has literally never seen it before. This is the most useful signal for "NEW".
+- Despite the name, `DiscoveredRelics` tracks relics the player has **picked up**, not merely seen.
+- This matches the in-game Compendium behavior: relics show as "Unknown" until picked up.
+- For SpireTracker, if a relic is NOT in `DiscoveredRelics`, the player has never picked it up → badge as "NEW".
 
 ### Relic Reward UI
 
@@ -39,20 +39,46 @@ Decompiled `sts2.dll` (v0.99.1, build 7ac1f450, 2026-03-13) using ilspycmd 9.1.0
   - `bool IsPopulated` — whether the relic has been determined
   - `void MarkContentAsSeen()` → calls `SaveManager.Instance.MarkRelicAsSeen(_relic)`
 
-### Boss Relic Selection ("Choose a Relic")
+### Boss Relic Selection ("Choose a Relic") — Overlay Screen
 
-- **`MegaCrit.Sts2.Core.Nodes.Screens.NChooseARelicSelection`** — Boss/treasure relic pick screen
+- **`MegaCrit.Sts2.Core.Nodes.Screens.NChooseARelicSelection`** — Boss/event relic pick overlay
   - `private Control _relicRow` — contains relic choice holders
-  - Children are likely `NTreasureRoomRelicHolder` instances
-  - `_Ready()` initializes the screen
+  - Children are **`NRelicBasicHolder`** (NOT NTreasureRoomRelicHolder)
+  - `NRelicBasicHolder.Relic` (NRelic) → `.Model` (RelicModel)
+  - `_Ready()` creates holders dynamically from `_relics` list and adds them to `_relicRow`
+
+### Treasure Room Relic Selection
+
+- **`MegaCrit.Sts2.Core.Nodes.Screens.TreasureRoomRelic.NTreasureRoomRelicCollection`** — Treasure chest relics
+  - `void InitializeRelics()` — populates holders from `TreasureRoomRelicSynchronizer.CurrentRelics`
+  - `SingleplayerRelicHolder` (NTreasureRoomRelicHolder) — used for 1-relic chests
+  - `_multiplayerHolders` (List) — used for multi-relic chests
+  - `_holdersInUse` (List) — whichever set is active
+  - **`NTreasureRoomRelicHolder`** extends NButton
+    - `Relic` property (NRelic) → `.Model` (RelicModel)
+    - In namespace `MegaCrit.Sts2.Core.Nodes.Screens.TreasureRoomRelic`
 
 ### Shop Relics
 
 - **`MegaCrit.Sts2.Core.Nodes.Screens.Shops.NMerchantRelic`** — Shop relic slot
   - Extends `NMerchantSlot`
   - `private Control _relicHolder` — visual container for the relic
-  - `void UpdateVisual()` — called to update the display
-  - Entry is `MerchantRelicEntry` with `.Model` property (RelicModel)
+  - `private RelicModel? _relic` — set in `FillSlot()`, the relic model
+  - `void UpdateVisual()` — called to update the display (protected override)
+
+### NRelicBasicHolder
+
+- **`MegaCrit.Sts2.Core.Nodes.Relics.NRelicBasicHolder`** — Simple relic display holder
+  - `NRelic Relic` — public property, the relic node
+  - `private NRelic _relic` — set in `_Ready()` from `GetNode<NRelic>("%Relic")`
+  - `private RelicModel _model` — set in `Create()` before entering tree
+
+### MegaLabel
+
+- **`MegaCrit.Sts2.addons.mega_text.MegaLabel`** extends `Label`
+  - `_Ready()` calls `MegaLabelHelper.AssertThemeFontOverride()` and `RefreshFont()`
+  - Auto-sizes text to fit container bounds
+  - Requires theme font override — plain Labels may render without it using fallback fonts
 
 ### Relic Model IDs
 

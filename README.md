@@ -1,6 +1,6 @@
 # SpireTracker
 
-A lightweight QoL mod for **Slay the Spire 2** that marks relics you've never seen before with a **"NEW"** badge. Helps completionists track what's still unexplored.
+A lightweight QoL mod for **Slay the Spire 2** that marks relics you've never picked up with a **"NEW"** badge. Helps completionists track what's still unexplored.
 
 ![.NET 9.0](https://img.shields.io/badge/.NET-9.0-purple)
 ![Godot 4.5](https://img.shields.io/badge/Godot-4.5-blue)
@@ -8,16 +8,16 @@ A lightweight QoL mod for **Slay the Spire 2** that marks relics you've never se
 
 ## Features
 
-- 🏷️ **"NEW" badges** on relics you haven't encountered before
+- 🏷️ **"NEW" badges** on relics you haven't picked up before
 - 🎁 **Reward screen** — relic rewards after combat
 - 👑 **Boss/treasure relics** — "choose a relic" selection screen
 - 🛒 **Shop relics** — merchant relic slots
-- ⚡ **Zero persistence** — reads the game's own `DiscoveredRelics` progress data
+- ⚡ **Zero persistence** — syncs with the game's own Compendium tracking
 - 🔒 **No gameplay impact** — purely visual, won't affect saves or achievements
 
 ## How It Works
 
-The game tracks which relics you've "discovered" (seen on screen) in `ProgressState.DiscoveredRelics`. SpireTracker uses [Harmony](https://github.com/pardeike/Harmony) to patch the UI methods that display relics. Before the game marks a relic as seen, we check if it's already in the discovered set — if not, we attach a gold "NEW" label to the relic's icon.
+The game's Compendium tracks which relics you've picked up via `ProgressState.DiscoveredRelics`. SpireTracker uses [Harmony](https://github.com/pardeike/Harmony) to patch the UI methods that display relics, checking each relic against the Compendium's discovered set. If a relic hasn't been picked up yet, we attach a gold "NEW" label to its icon — matching the Compendium's "Unknown" state.
 
 ### Patched Methods
 

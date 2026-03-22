@@ -11,26 +11,23 @@ namespace SpireTracker.Patches;
 /// Patches the relic reward button to show a "NEW" badge when the relic
 /// has never been picked up before.
 ///
-/// Target: NRewardButton.Reload() — called when a reward button is set up
-/// with its reward data and rendered on screen.
+/// Target: NRewardButton.Reload() — called when a reward button is set up.
 ///
-/// We use a Prefix to check DiscoveredRelics BEFORE the game updates the set,
+/// The reward screen uses TextureRect icons (via RelicReward.CreateIcon()),
+/// NOT NRelic nodes, so this needs its own patch separate from NRelicPatch.
+///
+/// We use a Prefix to check DiscoveredRelics BEFORE the game might update it,
 /// then a Postfix to attach the badge after the UI is built.
 /// </summary>
 [HarmonyPatch(typeof(NRewardButton), "Reload")]
 public class RelicRewardPatch
 {
-    // Thread-local storage to pass "is new" state from Prefix to Postfix
     [ThreadStatic]
     private static bool _isNewRelic;
 
     [ThreadStatic]
     private static bool _isRelicReward;
 
-    /// <summary>
-    /// Before Reload: check if this is a relic reward and if the relic is new.
-    /// Must happen before the game updates DiscoveredRelics.
-    /// </summary>
     static void Prefix(NRewardButton __instance)
     {
         try
@@ -43,37 +40,51 @@ public class RelicRewardPatch
 
             _isRelicReward = true;
 
-            // Access the private _relic field via Harmony's Traverse
             var relicModel = Traverse.Create(relicReward).Field("_relic").GetValue<RelicModel>();
-            if (relicModel == null) return;
+            if (relicModel == null)
+            {
+                SpireTracker.Logger.Info("RelicRewardPatch: _relic field is null");
+                return;
+            }
 
             _isNewRelic = RelicTracker.IsNewRelic(relicModel);
+            SpireTracker.Logger.Info(
+                $"RelicRewardPatch.Prefix: relic={relicModel.Id}, isNew={_isNewRelic}");
         }
         catch (Exception ex)
         {
-            SpireTracker.Logger.Error($"RelicRewardPatch.Prefix: {ex.Message}");
+            SpireTracker.Logger.Error($"RelicRewardPatch.Prefix: {ex.Message}\n{ex.StackTrace}");
         }
     }
 
-    /// <summary>
-    /// After Reload: if we determined the relic is new, attach a badge.
-    /// The icon container is the "%Icon" child of NRewardButton.
-    /// </summary>
     static void Postfix(NRewardButton __instance)
     {
         try
         {
-            if (!_isRelicReward || !_isNewRelic) return;
+            if (!_isRelicReward)
+            {
+                return;
+            }
 
-            // NRewardButton has a private _iconContainer field (Control)
-            var iconContainer = Traverse.Create(__instance).Field("_iconContainer").GetValue<Control>();
-            if (iconContainer == null) return;
+            if (!_isNewRelic) return;
+
+            // NRewardButton._iconContainer is the Control holding the relic icon
+            var iconContainer = Traverse.Create(__instance)
+                .Field("_iconContainer").GetValue<Control>();
+
+            if (iconContainer == null)
+            {
+                SpireTracker.Logger.Info("RelicRewardPatch: _iconContainer is null, "
+                    + "trying __instance as fallback");
+                NewBadge.AttachTo(__instance);
+                return;
+            }
 
             NewBadge.AttachTo(iconContainer);
         }
         catch (Exception ex)
         {
-            SpireTracker.Logger.Error($"RelicRewardPatch.Postfix: {ex.Message}");
+            SpireTracker.Logger.Error($"RelicRewardPatch.Postfix: {ex.Message}\n{ex.StackTrace}");
         }
     }
 }

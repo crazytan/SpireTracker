@@ -11,8 +11,6 @@ namespace SpireTracker.Patches;
 /// Target: NTreasureRoomRelicCollection.InitializeRelics() — called when
 /// the treasure chest is opened and relic holders are populated.
 ///
-/// In singleplayer, SingleplayerRelicHolder is used (1 relic).
-/// In multiplayer, _multiplayerHolders are used (2-4 relics).
 /// Each NTreasureRoomRelicHolder has a Relic (NRelic) with .Model (RelicModel).
 /// We iterate _holdersInUse which contains whichever set is active.
 /// </summary>
@@ -23,16 +21,30 @@ public class TreasureRoomRelicPatch
     {
         try
         {
+            SpireTracker.Logger.Info("TreasureRoomRelicPatch.Postfix fired");
+
             var holdersInUse = Traverse.Create(__instance)
                 .Field("_holdersInUse")
                 .GetValue<System.Collections.Generic.List<NTreasureRoomRelicHolder>>();
-            if (holdersInUse == null) return;
+
+            if (holdersInUse == null)
+            {
+                SpireTracker.Logger.Info("TreasureRoomRelicPatch: _holdersInUse is null");
+                return;
+            }
+
+            SpireTracker.Logger.Info(
+                $"TreasureRoomRelicPatch: {holdersInUse.Count} holders in use");
 
             foreach (var holder in holdersInUse)
             {
                 if (holder?.Relic?.Model == null) continue;
 
-                if (RelicTracker.IsNewRelic(holder.Relic.Model))
+                var model = holder.Relic.Model;
+                SpireTracker.Logger.Info(
+                    $"TreasureRoomRelicPatch: relic={model.Id}, isNew={RelicTracker.IsNewRelic(model)}");
+
+                if (RelicTracker.IsNewRelic(model))
                 {
                     NewBadge.AttachTo(holder);
                 }
@@ -40,7 +52,8 @@ public class TreasureRoomRelicPatch
         }
         catch (Exception ex)
         {
-            SpireTracker.Logger.Error($"TreasureRoomRelicPatch.Postfix: {ex.Message}");
+            SpireTracker.Logger.Error(
+                $"TreasureRoomRelicPatch.Postfix: {ex.Message}\n{ex.StackTrace}");
         }
     }
 }

@@ -10,9 +10,8 @@ namespace SpireTracker.Patches;
 /// Patches the "Choose a Relic" overlay screen (boss relic picks, events)
 /// to show "NEW" badges on relics that haven't been picked up yet.
 ///
-/// Target: NChooseARelicSelection._Ready() — the _relicRow container holds
-/// NRelicBasicHolder children, each with a Relic (NRelic) whose .Model is
-/// the RelicModel.
+/// Target: NChooseARelicSelection._Ready() — creates NRelicBasicHolder
+/// children in _relicRow, each containing an NRelic with a RelicModel.
 /// </summary>
 [HarmonyPatch(typeof(NChooseARelicSelection), "_Ready")]
 public class ChooseRelicPatch
@@ -21,16 +20,27 @@ public class ChooseRelicPatch
     {
         try
         {
+            SpireTracker.Logger.Info("ChooseRelicPatch.Postfix fired");
+
             var relicRow = Traverse.Create(__instance).Field("_relicRow").GetValue<Control>();
-            if (relicRow == null) return;
+            if (relicRow == null)
+            {
+                SpireTracker.Logger.Info("ChooseRelicPatch: _relicRow is null");
+                return;
+            }
+
+            SpireTracker.Logger.Info(
+                $"ChooseRelicPatch: _relicRow has {relicRow.GetChildCount()} children");
 
             foreach (var child in relicRow.GetChildren())
             {
                 if (child is not NRelicBasicHolder holder) continue;
 
-                // NRelicBasicHolder.Relic is NRelic; .Model is the RelicModel
                 var relicModel = holder.Relic?.Model;
                 if (relicModel == null) continue;
+
+                SpireTracker.Logger.Info(
+                    $"ChooseRelicPatch: relic={relicModel.Id}, isNew={RelicTracker.IsNewRelic(relicModel)}");
 
                 if (RelicTracker.IsNewRelic(relicModel))
                 {
@@ -40,7 +50,7 @@ public class ChooseRelicPatch
         }
         catch (Exception ex)
         {
-            SpireTracker.Logger.Error($"ChooseRelicPatch.Postfix: {ex.Message}");
+            SpireTracker.Logger.Error($"ChooseRelicPatch.Postfix: {ex.Message}\n{ex.StackTrace}");
         }
     }
 }

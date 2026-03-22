@@ -35,6 +35,7 @@ public class SpireTracker
             typeof(Patches.ChooseRelicPatch),
             typeof(Patches.TreasureRoomRelicPatch),
             typeof(Patches.MerchantRelicPatch),
+            typeof(Patches.EventOptionPatch),
         };
 
         foreach (var patchClass in patchClasses)

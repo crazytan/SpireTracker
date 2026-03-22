@@ -10,7 +10,7 @@ namespace SpireTracker.UI;
 /// - Uses plain Godot Label (BetterSpire2 confirms this works in STS2)
 /// - Finds and caches a game font to ensure text renders (STS2 may not provide
 ///   a default theme font for dynamically created Labels)
-/// - High ZIndex (100) to render above relic icons and outlines
+/// - ZIndex matches parent (0) so badge is occluded by overlapping UI naturally
 /// - MouseFilter.Ignore so badges don't intercept relic clicks/hovers
 /// - Cleans up existing badges before adding new ones (handles node pooling)
 /// </summary>
@@ -34,7 +34,7 @@ public static class NewBadge
         {
             Name = BadgeNodeName,
             Text = "NEW",
-            ZIndex = 100,
+            ZIndex = 0,
             MouseFilter = Control.MouseFilterEnum.Ignore,
             HorizontalAlignment = HorizontalAlignment.Center,
         };

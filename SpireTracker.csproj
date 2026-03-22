@@ -8,36 +8,25 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
-
-    <!-- OS Detection -->
-    <PropertyGroup>
-        <IsWindows>false</IsWindows>
-        <IsLinux>false</IsLinux>
-        <IsOSX>false</IsOSX>
-        <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
-        <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
-        <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
-    </PropertyGroup>
-
-    <!-- Windows paths -->
-    <PropertyGroup Condition="'$(IsWindows)' == 'true'">
-        <Sts2DataDir>C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64</Sts2DataDir>
-    </PropertyGroup>
-
-    <!-- Linux paths -->
-    <PropertyGroup Condition="'$(IsLinux)' == 'true'">
-        <Sts2DataDir>$(HOME)/.local/share/Steam/steamapps/common/Slay the Spire 2/data_sts2_linuxbsd_x86_64</Sts2DataDir>
-    </PropertyGroup>
-
-    <!-- macOS paths -->
-    <PropertyGroup Condition="'$(IsOSX)' == 'true'">
-        <Sts2DataDir>$(HOME)/Library/Application Support/Steam/steamapps/common/Slay the Spire 2/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64</Sts2DataDir>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <!-- Suppress architecture mismatch warnings (mod is MSIL, game DLLs are platform-specific) -->
         <NoWarn>$(NoWarn);MSB3270</NoWarn>
+    </PropertyGroup>
+
+    <!--
+        Set Sts2Dir to your Slay the Spire 2 install directory.
+        Override on command line: dotnet build -p:Sts2Dir="D:\SteamLibrary\steamapps\common\Slay the Spire 2"
+    -->
+    <PropertyGroup>
+        <Sts2Dir Condition="'$(Sts2Dir)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2Dir>
+        <Sts2Dir Condition="'$(Sts2Dir)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">$(HOME)/.local/share/Steam/steamapps/common/Slay the Spire 2</Sts2Dir>
+        <Sts2Dir Condition="'$(Sts2Dir)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">$(HOME)/Library/Application Support/Steam/steamapps/common/Slay the Spire 2</Sts2Dir>
+    </PropertyGroup>
+
+    <!-- Resolve platform-specific data directory -->
+    <PropertyGroup>
+        <Sts2DataDir Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
+        <Sts2DataDir Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(Sts2Dir)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
+        <Sts2DataDir Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64</Sts2DataDir>
     </PropertyGroup>
 
     <!-- Game DLL references -->
